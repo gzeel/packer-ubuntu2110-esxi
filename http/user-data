@@ -1,0 +1,50 @@
+#cloud-config
+autoinstall:
+    version: 1
+    early-commands:
+        # Stop ssh for packer
+        - sudo systemctl stop ssh
+    locale: en_US
+    keyboard:
+        layout: en
+        variant: us
+    
+    identity:
+        hostname: ubuntu-server
+        username: packer
+        password: '$6$rounds=4096$M7Mff19LzjJ/XYMp$dAMBN9uTuQwoDhVlZV84N6sdlDy1PSVn4HHFlcZxr7JWOjw0vnD7Dep4zpS9kenC0XUziKOQ5c6r..y09cZCo.'
+        username: vagrant
+        password: '$6$rounds=4096$vMgQ796Fm28f2QaE$g1pg8NNDCVQikPZr3YF4W8u5VkWGR6kCky6qO5L0ODpPCJuwOfznwBeUz8.8VhW88VV3yN11KhKnw0O4W3hpK/'
+
+    ssh:
+        install-server: true
+        allow-pw: true    
+    
+    packages:
+    - cloud-init
+    - curl
+    - net-tools
+    - open-vm-tools
+    - openssh-server
+    
+    storage:
+        layout:
+            name: direct
+    apt:
+        primary:
+            - arches: [amd64]
+              uri: "http://ro.archive.ubuntu.com/ubuntu/"
+              
+    user-data:
+      disable_root: false
+      package_update: true
+      package_upgrade: true
+      package_reboot_if_required: true      
+
+    late-commands:
+    - echo 'packer ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/packer
+    - echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/vagrant
+    - curtin in-target --target=/target -- chmod 440 /etc/sudoers.d/packer
+    - curtin in-target --target=/target -- chmod 440 /etc/sudoers.d/vagrant
+    - curtin in-target --target=/target -- apt-get update
+    - curtin in-target --target=/target -- apt-get upgrade --yes

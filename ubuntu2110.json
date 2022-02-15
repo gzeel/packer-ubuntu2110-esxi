@@ -1,0 +1,93 @@
+{
+  "variables": {
+      "vm_name": "packer-Ubuntu-21.10-amd64",
+      "numvcpus": "1",
+      "memsize": "1024",
+      "disk_size": "40960",
+      "iso_url": "https://mirror.nl.leaseweb.net/ubuntu-releases/21.10/ubuntu-21.10-live-server-amd64.iso",
+      "iso_checksum": "e84f546dfc6743f24e8b1e15db9cc2d2c698ec57d9adfb852971772d1ce692d4",
+      "ssh_username" : "packer",
+      "ssh_password" : "packer",
+      "boot_wait": "5s",
+      "esxi_vmnetwork": "VM Network",
+      "esxi_user": "root"   
+    },
+    "builders": [
+      {
+        "type": "vmware-iso",
+        "format": "vmx",
+        "version": 19,
+        "boot_command": [
+          "c",
+          "linux /casper/vmlinuz \"ds=nocloud-net;seedfrom=http://{{.HTTPIP}}:{{.HTTPPort}}/\" autoinstall quiet --- ",
+          "<enter><wait>",
+          "initrd /casper/initrd<enter><wait>",
+          "boot<enter>" 
+        ],
+        "boot_wait": "{{ user `boot_wait` }}",
+        "disk_size": "{{ user `disk_size` }}",
+        "cpus": "1",
+        "memory": "2048",
+        "disk_type_id": "thin",
+        "guest_os_type": "ubuntu-64",
+        "headless": false,
+        "vnc_over_websocket": true,
+        "http_directory": "http",
+        "insecure_connection": true,
+        "iso_checksum": "{{ user `iso_checksum` }}",
+        "iso_url": "{{ user `iso_url` }}",
+        "shutdown_command": "echo 'packer'|sudo -S shutdown -P now",
+        "ssh_password": "{{ user `ssh_password` }}",
+        "ssh_port": 22,
+        "ssh_username": "{{ user `ssh_username` }}",
+        "ssh_timeout": "30m",
+        "remote_type": "esx5",
+        "remote_host": "{{ user `esxi_remote_host` }}",
+        "remote_datastore": "{{ user `esxi_datastore` }}",
+        "remote_username": "{{ user `esxi_user` }}",
+        "remote_password": "{{user `esxi_password`}}",
+        "vm_name": "{{ user `vm_name` }}",
+        "vmx_data": {
+          "cpuid.coresPerSocket": "1",
+          "ethernet0.networkName": "{{user `esxi_vmnetwork`}}" 
+       },
+       "vmx_remove_ethernet_interfaces": true
+      }
+    ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo 'packer'|{{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "inline": [
+        "apt -y update && apt -y upgrade",
+        "apt -y install python3-pip",
+        "pip3 --no-cache-dir install ansible"
+      ]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "scripts/setup.yml",
+      "galaxy_file": "scripts/requirements.yml"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'packer'|{{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "scripts": ["scripts/cleanup.sh"]
+    }
+  ],
+
+  "post-processors": [
+    [
+      {
+        "output": "builds/{{.Provider}}-rocky8.box",
+        "type": "vagrant"
+      },
+      {
+        "type": "vagrant-cloud",
+        "box_tag": "{{user `boxname`}}",
+        "version": "{{user `version`}}"
+      }
+    ]
+  ]
+}
