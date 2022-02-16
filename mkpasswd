@@ -1,0 +1,1 @@
+vagrant -m SHA-512 --rounds=4096

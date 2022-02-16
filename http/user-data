@@ -9,12 +9,10 @@ autoinstall:
         layout: en
         variant: us
     
-    identity:
-        hostname: ubuntu-server
-        username: packer
-        password: '$6$rounds=4096$M7Mff19LzjJ/XYMp$dAMBN9uTuQwoDhVlZV84N6sdlDy1PSVn4HHFlcZxr7JWOjw0vnD7Dep4zpS9kenC0XUziKOQ5c6r..y09cZCo.'
-        username: vagrant
-        password: '$6$rounds=4096$vMgQ796Fm28f2QaE$g1pg8NNDCVQikPZr3YF4W8u5VkWGR6kCky6qO5L0ODpPCJuwOfznwBeUz8.8VhW88VV3yN11KhKnw0O4W3hpK/'
+    #identity:
+    #    hostname: ubuntu-server
+    #    username: packer
+    #    password: '$6$rounds=4096$M7Mff19LzjJ/XYMp$dAMBN9uTuQwoDhVlZV84N6sdlDy1PSVn4HHFlcZxr7JWOjw0vnD7Dep4zpS9kenC0XUziKOQ5c6r..y09cZCo.'
 
     ssh:
         install-server: true
@@ -39,7 +37,18 @@ autoinstall:
       disable_root: false
       package_update: true
       package_upgrade: true
-      package_reboot_if_required: true      
+      package_reboot_if_required: true     
+      users:
+        - name: packer
+          lock_passwd: false
+          shell: /bin/bash
+          groups: [adm, cdrom, dip, plugdev, lxd, sudo]
+          passwd: '$6$rounds=4096$M7Mff19LzjJ/XYMp$dAMBN9uTuQwoDhVlZV84N6sdlDy1PSVn4HHFlcZxr7JWOjw0vnD7Dep4zpS9kenC0XUziKOQ5c6r..y09cZCo.'
+        - name: vagrant
+          lock_passwd: false
+          shell: /bin/bash
+          groups: [adm, cdrom, dip, plugdev, lxd, sudo]
+          passwd: '$6$rounds=4096$fLTG162C53.RyXt6$Cs8j.LxyPDYu8wBxmhgaZJMUWUX5D5sQzlDGKxn36D0BLF/MqBdLWClryGIPBnmFAPrhoPPadSsC63ajm74fX1' 
 
     late-commands:
     - echo 'packer ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/packer
