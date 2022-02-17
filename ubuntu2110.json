@@ -80,7 +80,7 @@
   "post-processors": [
     [
       {
-        "output": "builds/{{.Provider}}-rocky8.box",
+        "output": "builds/{{.Provider}}-ubuntu2110.box",
         "type": "vagrant"
       },
       {

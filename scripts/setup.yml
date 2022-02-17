@@ -50,6 +50,11 @@
       line: 'GRUB_CMDLINE_LINUX_DEFAULT=""'
       state: present
 
+  - name: Install open-vm-tools
+    apt:
+      name: open-vm-tools
+      state: latest
+
   - name: Update grub2
     command: update-grub2
 
@@ -57,25 +62,3 @@
     apt:
       update_cache: yes
       upgrade: dist
-
-  - name: Install packages
-    apt:
-      name: "{{ packages }}"
-      state: latest
-    vars:
-      packages:
-      - bash-completion
-      - ccze
-      - curl
-      - git
-      - net-tools
-      - rsync
-      - screen
-      - tcpdump
-      - vim
-      - wget
-
-  - name: Install open-vm-tools
-    apt:
-      name: open-vm-tools
-      state: latest
